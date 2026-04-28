@@ -2,7 +2,6 @@ package com.edulibrary.dashboard.controller;
 
 import com.edulibrary.dashboard.dto.LoginRequest;
 import com.edulibrary.dashboard.dto.RegisterRequest;
-import com.edulibrary.dashboard.dto.AuthUserResponse;
 import com.edulibrary.dashboard.dto.MessageResponse;
 import com.edulibrary.dashboard.service.AuthService;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -25,7 +24,7 @@ public class AuthController {
      * Saves user directly to DB with plain text password
      */
     @PostMapping("/register")
-    public AuthUserResponse register(@RequestBody RegisterRequest request) {
+    public MessageResponse register(@RequestBody RegisterRequest request) {
         return authService.register(request.getEmail(), request.getPassword());
     }
 

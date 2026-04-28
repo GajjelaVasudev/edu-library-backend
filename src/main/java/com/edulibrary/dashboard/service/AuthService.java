@@ -1,11 +1,9 @@
 package com.edulibrary.dashboard.service;
 
-import com.edulibrary.dashboard.dto.AuthResponse;
-import com.edulibrary.dashboard.dto.AuthUserResponse;
 import com.edulibrary.dashboard.dto.ForgotPasswordResponse;
 import com.edulibrary.dashboard.dto.ForgotPasswordRequest;
-import com.edulibrary.dashboard.dto.LoginRequest;
 import com.edulibrary.dashboard.dto.MessageResponse;
+import com.edulibrary.dashboard.dto.LoginRequest;
 import com.edulibrary.dashboard.dto.RegisterRequest;
 import com.edulibrary.dashboard.dto.ResetPasswordRequest;
 import com.edulibrary.dashboard.exception.UnauthorizedException;
@@ -27,10 +25,21 @@ public class AuthService {
      * Simple register: save user directly to DB with plain text password (NO HASHING)
      */
     @Transactional
-    public AuthUserResponse register(String email, String password) {
-        UserAccount user = new UserAccount(email, password);
+    public MessageResponse register(String email, String password) {
+        String normalizedEmail = normalize(email);
+        String normalizedPassword = normalize(password);
+
+        if (normalizedEmail.isEmpty() || normalizedPassword.isEmpty()) {
+            throw new IllegalArgumentException("Email and password are required");
+        }
+
+        if (userAccountRepository.findByEmailIgnoreCase(normalizedEmail).isPresent()) {
+            throw new IllegalArgumentException("Email is already registered");
+        }
+
+        UserAccount user = new UserAccount(normalizedEmail, normalizedPassword);
         UserAccount saved = userAccountRepository.save(user);
-        return new AuthUserResponse(saved.getId(), email, email, "USER", null);
+        return new MessageResponse("Register successful for " + saved.getEmail());
     }
 
     /**
@@ -38,24 +47,30 @@ public class AuthService {
      */
     @Transactional(readOnly = true)
     public MessageResponse login(String email, String password) {
-        UserAccount user = userAccountRepository.findByEmailIgnoreCase(email)
+        String normalizedEmail = normalize(email);
+        String normalizedPassword = normalize(password);
+
+        if (normalizedEmail.isEmpty() || normalizedPassword.isEmpty()) {
+            throw new IllegalArgumentException("Email and password are required");
+        }
+
+        UserAccount user = userAccountRepository.findByEmailIgnoreCase(normalizedEmail)
                 .orElseThrow(() -> new UnauthorizedException("Invalid email or password"));
 
         // Plain text password comparison (NO HASHING)
-        if (!user.getPassword().equals(password)) {
+        if (!normalizedPassword.equals(user.getPassword())) {
             throw new UnauthorizedException("Invalid email or password");
         }
 
         return new MessageResponse("Login successful");
     }
 
-    // Keeping other method signatures for backward compatibility but not implementing them
-    public AuthResponse login(LoginRequest request) {
+    public MessageResponse login(LoginRequest request) {
         throw new UnsupportedOperationException("Use login(email, password) instead");
     }
 
-    public AuthUserResponse register(RegisterRequest request) {
-        throw new UnsupportedOperationException("Use register(email, password) instead");
+    public MessageResponse register(RegisterRequest request) {
+        return register(request.getEmail(), request.getPassword());
     }
 
     public ForgotPasswordResponse forgotPassword(ForgotPasswordRequest request) {
@@ -64,6 +79,10 @@ public class AuthService {
 
     public MessageResponse resetPassword(ResetPasswordRequest request) {
         throw new UnsupportedOperationException("Not implemented");
+    }
+
+    private String normalize(String value) {
+        return value == null ? "" : value.trim();
     }
 }
 
