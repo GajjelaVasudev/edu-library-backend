@@ -20,6 +20,15 @@ public class UserAccount {
     @Column(nullable = false)
     private String password;
 
+    @Column
+    private String name;
+
+    @Column
+    private String studentEmail;
+
+    @Column
+    private String role;
+
     public UserAccount() {
     }
 
@@ -50,5 +59,37 @@ public class UserAccount {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public String getPasswordHash() {
+        return password;
+    }
+
+    public void setPasswordHash(String passwordHash) {
+        this.password = passwordHash;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getStudentEmail() {
+        return studentEmail;
+    }
+
+    public void setStudentEmail(String studentEmail) {
+        this.studentEmail = studentEmail;
+    }
+
+    public com.edulibrary.dashboard.model.UserRole getRole() {
+        return role == null ? null : com.edulibrary.dashboard.model.UserRole.valueOf(role);
+    }
+
+    public void setRole(com.edulibrary.dashboard.model.UserRole role) {
+        this.role = role == null ? null : role.name();
     }
 }
