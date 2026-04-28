@@ -19,7 +19,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import java.time.Instant;
 import java.util.List;
 
-@Configuration
+// @Configuration - DISABLED because PasswordEncoder is not available after disabling Spring Security
+// (kept for reference; re-enable if needed)
 public class DataSeeder {
 
     @Bean
